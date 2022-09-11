@@ -46,6 +46,43 @@
         const fileInput = document.querySelector('.file-input');
         const downloadSection = document.querySelector('.download-section');
 
+        /**
+         * @returns {Promise<JSZip>}
+         */
+        const unzipOrNull = async (binaryData) => {
+          try {
+            return await JSZip.loadAsync(binaryData);
+          } catch (e) {
+            return null;
+          }
+        };
+
+        /**
+         * @param {Blob} blob
+         * @returns {Promise<string>}
+         */
+        const readAsText = (blob) => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Could not read blob as text'));
+          reader.readAsText(blob);
+        });
+
+        /**
+         * @param {string} string
+         * @param {RegExp} regex
+         * @param {number} index
+         * @returns {string[][]}
+         */
+        const matchAll = (string, regex, index) => {
+          const result = [];
+          let match = null;
+          while ((match = regex.exec(string)) !== null) {
+            result.push(match[index]);
+          }
+          return result;
+        };
+
         const getContainingFolder = (name) => {
           const parts = name.split('/');
           parts.pop();
@@ -61,54 +98,101 @@
           throw new Error('Can not determine project.json type');
         };
 
-        const unpackage = async (blob) => {
-          const packagedZip = await JSZip.loadAsync(blob);
+        const base85decode = (str) => {
+          // https://github.com/TurboWarp/packager/blob/master/src/packager/base85.js
+          const getValue = (code) => {
+            if (code === 0x28) code = 0x3c;
+            if (code === 0x29) code = 0x3e;
+            return code - 0x2a;
+          };
+          const toMultipleOfFour = (n) => {
+            if (n % 4 === 0) {
+              return n;
+            }
+            return n + (4 - n % 4);
+          };
+          const lengthEndsAt = str.indexOf(',');
+          const byteLength = +str
+            .substring(0, lengthEndsAt)
+            .split('')
+            .map(i => String.fromCharCode(i.charCodeAt(0) - 49))
+            .join('');
+          const resultBuffer = new ArrayBuffer(toMultipleOfFour(byteLength));
+          const resultView = new Uint32Array(resultBuffer);
+          for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j++) {
+            resultView[j] = (
+              getValue(str.charCodeAt(i + 4)) * 85 * 85 * 85 * 85 +
+              getValue(str.charCodeAt(i + 3)) * 85 * 85 * 85 +
+              getValue(str.charCodeAt(i + 2)) * 85 * 85 +
+              getValue(str.charCodeAt(i + 1)) * 85 +
+              getValue(str.charCodeAt(i))
+            );
+          }
+          return new Uint8Array(resultBuffer, 0, byteLength);
+        };
 
-          // TODO: escape . in path for regex
-          const findFileInZip = (zip, path) => zip.file(path) || zip.file(new RegExp(`^([^/]*/)?${path}$`))[0];
+        /**
+         * Find a file in a JSZip using its name regardless of the folder it's in.
+         * @param {JSZip} zip
+         * @param {string} path
+         * @returns {JSZip.File|null}
+         */
+        const findFileInZip = (zip, path) => zip.file(path) || zip.file(new RegExp(`^([^/]*/)?${path}$`))[0];
 
-          const projectJSON = findFileInZip(packagedZip, 'project.json');
-          if (projectJSON) {
-            // The project is an uncompressed sb3 project.
-            const innerFolderPath = getContainingFolder(projectJSON.name);
-            const innerZip = packagedZip.folder(innerFolderPath);
+        const unpackageBinaryBlob = async (data) => {
+          const projectZip = await unzipOrNull(data);
 
+          if (projectZip) {
+            // The project is a compressed sb2 or sb3 project.
+            const projectJSON = findFileInZip(projectZip, 'project.json');
+            const projectJSONData = JSON.parse(await projectJSON.async('text'));
+            const type = identifyProjectJSONType(projectJSONData);
             return {
-              type: 'sb3',
-              data: await innerZip.generateAsync({
-                type: 'arraybuffer',
-                compression: 'DEFLATE'
-              })
+              type,
+              data
             };
           }
 
-          const projectBinary = findFileInZip(packagedZip, 'project.zip');
-          if (projectBinary) {
-            const projectData = await projectBinary.async('arraybuffer');
+          // The project is a Scratch 1 project.
+          return {
+            type: 'sb',
+            data
+          };
+        };
 
-            let projectZip;
-            try {
-              projectZip = await JSZip.loadAsync(projectData);
-            } catch (e) {
-              // Project isn't a zip. This error is safe to ignore.
-            }
+        const unpackage = async (blob) => {
+          const packagedZip = await unzipOrNull(blob);
 
-            if (projectZip) {
-              // The project is a compressed sb2 or sb3 project.
-              const projectJSON = findFileInZip(projectZip, 'project.json');
-              const projectJSONData = JSON.parse(await projectJSON.async('text'));
-              const type = identifyProjectJSONType(projectJSONData);
+          if (packagedZip) {
+            const projectJSON = findFileInZip(packagedZip, 'project.json');
+            if (projectJSON) {
+              // The project is an uncompressed sb3 project.
+              const innerFolderPath = getContainingFolder(projectJSON.name);
+              const innerZip = packagedZip.folder(innerFolderPath);
+  
               return {
-                type,
-                data: projectData
+                type: 'sb3',
+                data: await innerZip.generateAsync({
+                  type: 'arraybuffer',
+                  compression: 'DEFLATE'
+                })
               };
             }
 
-            // The project is a Scratch 1 project.
-            return {
-              type: 'sb',
-              data: projectData
-            };
+            const projectBinary = findFileInZip(packagedZip, 'project.zip');
+            if (projectBinary) {
+              const projectData = await projectBinary.async('arraybuffer');
+              return unpackageBinaryBlob(projectData);
+            }
+
+            throw new Error('Input was a zip but we could not find a project.')
+          }
+
+          const text = await readAsText(blob);
+          const base85Segments = matchAll(text, /<script type="p4-project">([^<]+)<\/script>/g, 1);
+          if (base85Segments.length) {
+            const decoded = base85decode(base85Segments.join(''));
+            return unpackageBinaryBlob(decoded);
           }
         };
 
