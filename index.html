@@ -52,14 +52,24 @@
           return parts.join('/');
         };
 
+        const identifyProjectJSONType = (data) => {
+          if ('targets' in data) {
+            return 'sb3';
+          } else if ('objName' in data) {
+            return 'sb2';
+          }
+          throw new Error('Can not determine project.json type');
+        };
+
         const unpackage = async (blob) => {
           const packagedZip = await JSZip.loadAsync(blob);
 
           // TODO: escape . in path for regex
-          const findFileInZip = (path) => packagedZip.file(path) || packagedZip.file(new RegExp(`^([^/]*/)?${path}$`))[0];
+          const findFileInZip = (zip, path) => zip.file(path) || zip.file(new RegExp(`^([^/]*/)?${path}$`))[0];
 
-          const projectJSON = findFileInZip('project.json');
+          const projectJSON = findFileInZip(packagedZip, 'project.json');
           if (projectJSON) {
+            // The project is an uncompressed sb3 project.
             const innerFolderPath = getContainingFolder(projectJSON.name);
             const innerZip = packagedZip.folder(innerFolderPath);
 
@@ -72,7 +82,34 @@
             };
           }
 
-          // const projectBinary = findFileInZip('project.zip');
+          const projectBinary = findFileInZip(packagedZip, 'project.zip');
+          if (projectBinary) {
+            const projectData = await projectBinary.async('arraybuffer');
+
+            let projectZip;
+            try {
+              projectZip = await JSZip.loadAsync(projectData);
+            } catch (e) {
+              // Project isn't a zip. This error is safe to ignore.
+            }
+
+            if (projectZip) {
+              // The project is a compressed sb2 or sb3 project.
+              const projectJSON = findFileInZip(projectZip, 'project.json');
+              const projectJSONData = JSON.parse(await projectJSON.async('text'));
+              const type = identifyProjectJSONType(projectJSONData);
+              return {
+                type,
+                data: projectData
+              };
+            }
+
+            // The project is a Scratch 1 project.
+            return {
+              type: 'sb',
+              data: projectData
+            };
+          }
         };
 
         fileInput.addEventListener('change', async (e) => {
