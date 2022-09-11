@@ -306,6 +306,7 @@
           }
 
           while (downloadSection.firstChild) {
+            URL.revokeObjectURL(downloadSection.firstChild.href);
             downloadSection.firstChild.remove();
           }
 
