@@ -222,8 +222,18 @@
               const innerFolderPath = getContainingFolder(projectJSON.name);
               const innerZip = packagedZip.folder(innerFolderPath);
 
-              // TODO: delete extra files that aren't part of the project such as in an HTMLifier zip
-  
+              // Remove extra files that aren't part of the project but are in the same folder
+              // This matters for HTMLifier zips of Scratch 3 projects
+              for (const path of Object.keys(innerZip.files)) {
+                const isPartOfProject = (
+                  path === 'project.json' ||
+                  /^[a-f0-9]{32}\.[a-z0-9]{3}$/i.test(path)
+                );
+                if (!isPartOfProject) {
+                  innerZip.remove(path);
+                }
+              }
+
               return {
                 type: 'sb3',
                 data: await innerZip.generateAsync({
