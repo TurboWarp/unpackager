@@ -43,6 +43,10 @@
         width: 100%;
       }
 
+      .download-section a {
+        display: block;
+      }
+
       .drag-effect {
         opacity: 0;
         position: fixed;
@@ -69,7 +73,7 @@
 
       <p class="warning">The unpackager is in a very early state of development. Expect to find bugs.</p>
 
-      <input type="file" class="file-input" accept=".zip, .html" autocomplete="off">
+      <input type="file" class="file-input" accept=".zip, .html" multiple autocomplete="off">
 
       <p class="download-section"></p>
 
@@ -462,6 +466,25 @@
           throw new Error('Input was not a zip and we could not find project.');
         };
 
+        const processFile = async (file) => {
+          const unpackaged = await unpackage(file);
+          const type = unpackaged.type;
+          const data = unpackaged.data;
+          const name = `${file.name}.${type}`;
+
+          const blob = new Blob([data], {
+            type: `application/x.scratch.${type}`
+          });
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = name;
+          link.textContent = `Download ${name} (${(blob.size / 1000 / 1000).toFixed(2)}MB)`;
+          downloadSection.appendChild(link);
+          link.click();
+        };
+
         const processInput = async () => {
           const file = fileInput.files[0];
           if (!file) {
@@ -474,25 +497,12 @@
           }
 
           try {
-            const unpackaged = await unpackage(file);
-            const type = unpackaged.type;
-            const data = unpackaged.data;
-            const name = `${file.name}.${type}`;
-
-            const blob = new Blob([data], {
-              type: `application/x.scratch.${type}`
-            });
-            const url = URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = name;
-            link.textContent = `Download ${name} (${(blob.size / 1000 / 1000).toFixed(2)}MB)`;
-            downloadSection.appendChild(link);
-            link.click();
+            for (const file of fileInput.files) {
+              await processFile(file);
+            }
           } catch (e) {
             console.error(e);
-            alert(e);
+            alert(`An error occurred, please report this with the file you tried to unpackage.\n\n${e}`);
           }
         };
 
