@@ -168,7 +168,18 @@
          * @param {string} path
          * @returns {JSZip.File|null}
          */
-        const findFileInZip = (zip, path) => zip.file(path) || zip.file(new RegExp(`^([^/]*/)?${path}$`))[0];
+        const findFileInZip = (zip, path) => {
+          const f = zip.file(path);
+          if (f) {
+            return f;
+          }
+          for (const filename of Object.keys(zip.files)) {
+            if (filename.endsWith(`/${path}`)) {
+              return zip.file(filename);
+            }
+          }
+          return null;
+        };
 
         const unpackageBinaryBlob = async (data) => {
           const projectZip = await unzipOrNull(data);
@@ -201,6 +212,8 @@
               // The project is an sb3 project.
               const innerFolderPath = getContainingFolder(projectJSON.name);
               const innerZip = packagedZip.folder(innerFolderPath);
+
+              // TODO: delete extra files that aren't part of the project such as in an HTMLifier zip
   
               return {
                 type: 'sb3',
