@@ -1,4 +1,6 @@
 var unpackage = (function() {
+  'use strict';
+
   /**
    * @returns {Promise<JSZip>}
    */
