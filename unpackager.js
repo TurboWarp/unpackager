@@ -177,9 +177,9 @@ var unpackage = (function() {
   };
 
   /**
-    * @param {string} str
-    * @returns {Uint8Array}
-    */
+   * @param {string} str
+   * @returns {Uint8Array}
+   */
   const decodeBase64 = (str) => {
     const decoded = atob(str);
     const result = new Uint8Array(decoded.length);
@@ -190,8 +190,8 @@ var unpackage = (function() {
   };
 
   /**
-    * @param {string} uri
-    */
+   * @param {string} uri
+   */
   const decodeDataURI = (uri) => {
     const parts = uri.split(';base64,');
     if (parts.length < 2) {
@@ -202,11 +202,11 @@ var unpackage = (function() {
   };
 
   /**
-    * Find a file in a JSZip using its name regardless of the folder it's in.
-    * @param {JSZip} zip
-    * @param {string} path
-    * @returns {JSZip.File|null}
-    */
+   * Find a file in a JSZip using its name regardless of the folder it's in.
+   * @param {JSZip} zip
+   * @param {string} path
+   * @returns {JSZip.File|null}
+   */
   const findFileInZip = (zip, path) => {
     const f = zip.file(path);
     if (f) {
