@@ -241,6 +241,16 @@ var unpackage = (function() {
     };
   };
 
+  const zipToArrayBuffer = (zip) => {
+    for (const file of Object.values(zip.files)) {
+      file.date = new Date(1662869887000); // date of first unpackager commit :)
+    }
+    return zip.generateAsync({
+      type: 'arraybuffer',
+      compression: 'DEFLATE'
+    });
+  };
+
   const unpackage = async (blob) => {
     const packagedZip = await unzipOrNull(blob);
 
@@ -278,10 +288,7 @@ var unpackage = (function() {
 
         return {
           type,
-          data: await innerZip.generateAsync({
-            type: 'arraybuffer',
-            compression: 'DEFLATE'
-          })
+          data: await zipToArrayBuffer(innerZip)
         };
       }
 
@@ -361,10 +368,7 @@ var unpackage = (function() {
 
       return {
         type: 'sb3',
-        data: await newZip.generateAsync({
-          type: 'arraybuffer',
-          compression: 'DEFLATE'
-        })
+        data: await zipToArrayBuffer(newZip)
       };
     }
 
@@ -383,10 +387,7 @@ var unpackage = (function() {
 
       return {
         type: 'sb3',
-        data: await newZip.generateAsync({
-          type: 'arraybuffer',
-          compression: 'DEFLATE'
-        })
+        data: await zipToArrayBuffer(newZip)
       };
     }
 
