@@ -79,16 +79,16 @@ var unpackage = (function() {
       const lengthEndsAt = str.indexOf(',');
       const byteLength = +str.substring(0, lengthEndsAt);
       const resultBuffer = new ArrayBuffer(toMultipleOfFour(byteLength));
-      const resultView = new Uint32Array(resultBuffer);
+      const resultView = new DataView(resultBuffer);
       const stringBytes = stringToBytes(str);
-      for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j++) {
-        resultView[j] = (
+      for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j += 4) {
+        resultView.setUint32(j, (
           getValue(stringBytes[i + 4]) * 85 * 85 * 85 * 85 +
           getValue(stringBytes[i + 3]) * 85 * 85 * 85 +
           getValue(stringBytes[i + 2]) * 85 * 85 +
           getValue(stringBytes[i + 1]) * 85 +
           getValue(stringBytes[i])
-        );
+        ), true);
       }
       return new Uint8Array(resultBuffer, 0, byteLength);
     };
@@ -113,16 +113,16 @@ var unpackage = (function() {
       const lengthEndsAt = str.indexOf(',');
       const byteLength = +str.substring(0, lengthEndsAt);
       const resultBuffer = new ArrayBuffer(toMultipleOfFour(byteLength));
-      const resultView = new Uint32Array(resultBuffer);
+      const resultView = new DataView(resultBuffer);
       const stringBytes = stringToBytes(str);
-      for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j++) {
-        resultView[j] = (
+      for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j += 4) {
+        resultView.setUint32(j, (
           getValue(stringBytes[i + 4]) * 85 * 85 * 85 * 85 +
           getValue(stringBytes[i + 3]) * 85 * 85 * 85 +
           getValue(stringBytes[i + 2]) * 85 * 85 +
           getValue(stringBytes[i + 1]) * 85 +
           getValue(stringBytes[i])
-        );
+        ), true);
       }
       return new Uint8Array(resultBuffer, 0, byteLength);
     };
@@ -148,15 +148,15 @@ var unpackage = (function() {
         .map(i => String.fromCharCode(i.charCodeAt(0) - 49))
         .join('');
       const resultBuffer = new ArrayBuffer(toMultipleOfFour(byteLength));
-      const resultView = new Uint32Array(resultBuffer);
-      for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j++) {
-        resultView[j] = (
+      const resultView = new DataView(resultBuffer);
+      for (let i = lengthEndsAt + 1, j = 0; i < str.length; i += 5, j += 4) {
+        resultView.setUint32(j, (
           getValue(str.charCodeAt(i + 4)) * 85 * 85 * 85 * 85 +
           getValue(str.charCodeAt(i + 3)) * 85 * 85 * 85 +
           getValue(str.charCodeAt(i + 2)) * 85 * 85 +
           getValue(str.charCodeAt(i + 1)) * 85 +
           getValue(str.charCodeAt(i))
-        );
+        ), true);
       }
       return new Uint8Array(resultBuffer, 0, byteLength);
     };
