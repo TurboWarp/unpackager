@@ -436,6 +436,9 @@ var unpackage = (function() {
 
     // Look for various hints that this is an export of the HTML after the project has loaded.
     if (
+      // scratch-render-fonts will add this stylesheet:
+      text.includes('<style class="scratch-render-styles"') ||
+      // TurboWarp Packager's Scaffolding will add various elements:
       text.includes('<div class="sc-layers"') ||
       text.includes('<canvas class="sc-canvas"') ||
       text.includes('<div class="scratch-render-overlays"') ||
