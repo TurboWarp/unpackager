@@ -425,6 +425,25 @@ var unpackage = (function() {
       };
     }
 
+    // At this point, we couldn't find any data in the file.
+    // Let's try to generate more useful error messages for some common intended failure cases.
+
+    // If the file depends on "script.js" then it was packaged by TurboWarp Packager as a zip
+    // and so it cannot be unpackaged with just the HTML file.
+    if (text.includes('<script src="script.js"></script>')) {
+      throw new Error('It looks like the project was packaged as a zip, but only the HTML file was provided. Open an issue including the URL where you got this file and we will manually unpackage it for you. This is a manual process for now.');
+    }
+
+    // Look for various hints that this is an export of the HTML after the project has loaded.
+    if (
+      text.includes('<div class="sc-layers"') ||
+      text.includes('<canvas class="sc-canvas"') ||
+      text.includes('<div class="scratch-render-overlays"') ||
+      text.includes('<div class="sc-monitor-overlay"')
+    ) {
+      throw new Error('It looks like you saved the HTML after the project loads. This does not work as the project data is removed from the HTML as the project loads to save memory. Open an issue including the URL where you got this file and we will manually unpackage it for you. This is a manual process for now.');
+    }
+
     throw new Error('Input was not a zip and we could not find project.');
   };
 
