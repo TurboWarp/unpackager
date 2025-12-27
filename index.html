@@ -85,9 +85,9 @@
       }
 
       .project {
-        padding: 12px;
-        border-radius: 12px;
-        margin: 12px 0;
+        padding: 8px;
+        border-radius: 8px;
+        margin: 16px 0;
         box-sizing: border-box;
         transition: .2s background-color;
         border: 1px solid rgba(76, 78, 208, 0.8);
@@ -102,7 +102,11 @@
         background-color: rgba(255, 0, 0, 0.2);
       }
       .project-title {
-        margin-top: 0;
+        margin: 0 0 16px 0;
+      }
+
+      .error-stack {
+        margin-bottom: 0;
       }
 
       .drag-effect {
@@ -252,7 +256,7 @@
                 statusElement.removeChild(statusElement.firstChild);
               }
 
-              statusElement.innerHTML = 'Project could not be unpackaged. Consider creating a <a href="https://github.com/TurboWarp/unpackager/issues/new?template=unpackage-request.yml">manual unpackaging request</a>.';
+              statusElement.innerHTML = 'File could not be unpackaged. Consider creating a <a href="https://github.com/TurboWarp/unpackager/issues/new?template=unpackage-request.yml">manual unpackaging request</a>.';
 
               const errorElement = document.createElement('pre');
               errorElement.className = 'error-stack';
