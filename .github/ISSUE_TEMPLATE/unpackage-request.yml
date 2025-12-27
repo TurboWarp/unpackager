@@ -13,16 +13,12 @@ body:
           required: true
         - label: I understand that volunteers may refuse to unpackage a project for any reason.
           required: true
-        - label: I understand that submitting more than one request per week will result in all of my requests being ignored.
-          required: true
-        - label: I understand that volunteers will send the project using a temporary link that expires after a couple days that will not be regenerated after it expires.
-          required: true
 
   - type: input
     attributes:
       label: Link to the project
       description: |
-        Give us a link to where we can play the project.
+        Give us a link to where we can run the project.
     validations:
       required: true
 
@@ -30,4 +26,8 @@ body:
     attributes:
       label: Additional information
       description: |
-        You can more any additional information or context here if you want.
+        Did you create the project, or have you received permission to unpackage it from the creator?
+
+        If you don't have permission, your request will still be considered, but please briefly explain why we should unpackage it.
+
+        Any other relevant context for your request can also be included here.
