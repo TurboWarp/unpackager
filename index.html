@@ -106,7 +106,11 @@
       }
 
       .error-stack {
+        font-family: monospace;
         margin-bottom: 0;
+        margin-top: 16px;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
       }
 
       .drag-effect {
@@ -258,7 +262,7 @@
 
               statusElement.innerHTML = 'File could not be unpackaged. Consider creating a <a href="https://github.com/TurboWarp/unpackager/issues/new?template=unpackage-request.yml">manual unpackaging request</a>.';
 
-              const errorElement = document.createElement('pre');
+              const errorElement = document.createElement('div');
               errorElement.className = 'error-stack';
               errorElement.textContent = (e && e.stack) ? e.stack : e;
               projectElement.appendChild(errorElement);
