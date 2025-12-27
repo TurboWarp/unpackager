@@ -12,7 +12,9 @@ var unpackage = (function() {
    */
   const unzipOrNull = async (binaryData) => {
     try {
-      return await JSZip.loadAsync(binaryData);
+      return await JSZip.loadAsync(binaryData, {
+        recoverCorrupted: true,
+      });
     } catch (e) {
       return null;
     }
