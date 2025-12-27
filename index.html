@@ -27,13 +27,53 @@
         }
       }
 
-      h1, h2, h3 {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      h1, h2 {
         font-weight: normal;
       }
-
       main {
         max-width: 480px;
         margin: auto;
+      }
+      pre {
+        white-space: pre-wrap;
+      }
+
+      .header {
+        background-color: #ff4c4c;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+      .header-inner {
+        display: flex;
+        max-width: 480px;
+        margin: 0 auto;
+        justify-content: space-between;
+      }
+      .header a {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.5rem 0.25rem 0.5rem 0;
+        align-items: center;
+        text-decoration: none;
+        color: inherit !important;
+      }
+      .header a:hover {
+        text-decoration: underline;
+      }
+      .header img {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+      }
+      @media (prefers-color-scheme: dark) {
+        .header {
+          background-color: #333;
+        }
       }
 
       .code {
@@ -44,8 +84,25 @@
         width: 100%;
       }
 
-      .download-section a {
-        display: block;
+      .project {
+        padding: 12px;
+        border-radius: 12px;
+        margin: 12px 0;
+        box-sizing: border-box;
+        transition: .2s background-color;
+        border: 1px solid rgba(76, 78, 208, 0.8);
+        background-color: rgba(76, 78, 208, 0.2);
+      }
+      .project[data-success] {
+        border-color: rgba(91, 181, 91, 0.8);
+        background-color: rgba(0, 255, 0, 0.2);
+      }
+      .project[data-error] {
+        border-color: rgba(255, 67, 67, 0.8);
+        background-color: rgba(255, 0, 0, 0.2);
+      }
+      .project-title {
+        margin-top: 0;
       }
 
       .drag-effect {
@@ -65,19 +122,26 @@
       }
 
       .notice {
-        padding: 4px;
-        border: 1px solid red;
-        background-color: rgba(255, 0, 0, 0.205);
-        border-radius: 4px;
-      }
-
-      pre {
-        white-space: pre-wrap;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px;
+        border: 1px solid rgb(255, 149, 0);
+        background-color: rgba(255, 145, 0, 0.2);
+        border-radius: 8px;
       }
     </style>
   </head>
 
   <body>
+    <header class="header">
+      <div class="header-inner">
+        <a href="https://turbowarp.org/">
+          <img src="turbowarp.svg" alt="">
+          <span>TurboWarp</span>
+        </a>
+      </div>
+    </header>
+
     <main>
       <h1>Unpackager</h1>
 
@@ -85,11 +149,11 @@
 
       <p>Select or drop an HTML or zip file, and the unpackager will try to extract the original Scratch project.</p>
 
+      <p class="notice">Having access to a packaged version of a project does not necessarily mean that you are legally allowed to unpackage the project, use it, modify it, redistribute it, sell it, or otherwise ignore copyright law. Ask the creator of the project for more information.</p>
+
       <input type="file" class="file-input" accept=".zip, .html" multiple autocomplete="off">
 
       <p class="download-section"></p>
-
-      <p class="notice">Having access to a packaged version of a project does not necessarily mean that you are legally allowed to unpackage the project, use it, modify it, redistribute it, sell it, or otherwise ignore copyright law. Ask the creator of the project for more information.</p>
 
       <h2>Manual unpackage requests</h2>
       <p>If the unpackager can't unpackage a project (this happens pretty often), you can <a href="https://github.com/TurboWarp/unpackager/issues/new?template=unpackage-request.yml">create a manual unpackage request</a> for volunteers to review.</p>
@@ -141,8 +205,7 @@
         };
 
         const processInput = async () => {
-          const file = fileInput.files[0];
-          if (!file) {
+          if (!fileInput.files[0]) {
             return;
           }
 
@@ -153,30 +216,49 @@
             downloadSection.firstChild.remove();
           }
 
-          try {
-            for (const file of fileInput.files) {
-              const placeholder = document.createElement('span');
-              placeholder.textContent = `Processing ${file.name}...`;
-              downloadSection.appendChild(placeholder);
+          for (const file of fileInput.files) {
+            const projectElement = document.createElement('div');
+            projectElement.className = 'project';
+            downloadSection.appendChild(projectElement);
 
+            const projectTitleElement = document.createElement('h3');
+            projectTitleElement.textContent = file.name;
+            projectTitleElement.className = 'project-title';
+            projectElement.appendChild(projectTitleElement);
+
+            const statusElement = document.createElement('div');
+            statusElement.textContent = 'Processing...';
+            projectElement.appendChild(statusElement);
+
+            try {
               const blob = await processFile(file);
 
-              placeholder.remove();
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(blob);
-              link.download = blob.name;
-              link.textContent = `Download ${blob.name} (${(blob.size / 1000 / 1000).toFixed(2)}MB)`;
-              downloadSection.appendChild(link);
-              link.click();
+              projectElement.dataset.success = true;
+              while (statusElement.firstChild) {
+                statusElement.removeChild(statusElement.firstChild);
+              }
+
+              const downloadElement = document.createElement('a');
+              downloadElement.href = URL.createObjectURL(blob);
+              downloadElement.download = blob.name;
+              downloadElement.textContent = `Download ${blob.name} (${(blob.size / 1000 / 1000).toFixed(2)}MB)`;
+              statusElement.appendChild(downloadElement);
+              downloadElement.click();
+            } catch (e) {
+              console.error(e);
+
+              projectElement.dataset.error = true;
+              while (statusElement.firstChild) {
+                statusElement.removeChild(statusElement.firstChild);
+              }
+
+              statusElement.innerHTML = 'Project could not be unpackaged. Consider creating a <a href="https://github.com/TurboWarp/unpackager/issues/new?template=unpackage-request.yml">manual unpackaging request</a>.';
+
+              const errorElement = document.createElement('pre');
+              errorElement.className = 'error-stack';
+              errorElement.textContent = (e && e.stack) ? e.stack : e;
+              projectElement.appendChild(errorElement);
             }
-          } catch (e) {
-            console.error(e);
-
-            const error = document.createElement('pre');
-            error.textContent = (e && e.stack) ? e.stack : e;
-            downloadSection.appendChild(error);
-
-            alert(`An error occurred, please report this with the file you tried to unpackage.\n\n${e}`);
           }
         };
 
