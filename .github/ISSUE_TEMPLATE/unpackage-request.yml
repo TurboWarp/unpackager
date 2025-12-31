@@ -9,9 +9,11 @@ body:
     attributes:
       label: Understandings
       options:
-        - label: I understand that it will take several days for a volunteer to look at my request.
+        - label: I understand that it may take several days for a volunteer to look at my request.
           required: true
         - label: I understand that volunteers may refuse to unpackage a project for any reason.
+          required: true
+        - label: I understand that volunteers will provide a temporary download link that expires within 3 days. If I fail to download the project in time, it will not be unpackaged again.
           required: true
 
   - type: input
