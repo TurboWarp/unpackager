@@ -30,8 +30,8 @@ body:
       description: |
         Did you create the project, or have you received permission to unpackage it from the creator?
 
-        If you don't have permission, your request will still be considered, but please briefly explain why we should unpackage it.
+        If you don't have permission, briefly explain why we should unpackage it.
 
-        Any other relevant context for your request can also be included here.
+        Requests without an explanation why we should unpackage the project will be ignored.
     validations:
       required: true
