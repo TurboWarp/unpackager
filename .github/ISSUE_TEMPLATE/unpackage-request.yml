@@ -33,3 +33,5 @@ body:
         If you don't have permission, your request will still be considered, but please briefly explain why we should unpackage it.
 
         Any other relevant context for your request can also be included here.
+    validations:
+      required: true
