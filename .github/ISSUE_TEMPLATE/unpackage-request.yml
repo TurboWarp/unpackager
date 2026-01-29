@@ -21,6 +21,8 @@ body:
       label: Link to the project
       description: |
         Give us a link to where we can run the project.
+
+        Don't try to download the project's HTML yourself. Most people download the wrong thing. Just give us a link to the website so we can do it correctly.
     validations:
       required: true
 
