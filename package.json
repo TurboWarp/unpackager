@@ -1,0 +1,23 @@
+{
+  "name": "@turbowarp/unpackager",
+  "version": "1.0.0",
+  "description": "https://turbowarp.github.io/unpackager/",
+  "homepage": "https://github.com/TurboWarp/unpackager#readme",
+  "bugs": {
+    "url": "https://github.com/TurboWarp/unpackager/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TurboWarp/unpackager.git"
+  },
+  "license": "MPL-2.0",
+  "author": "",
+  "type": "commonjs",
+  "main": "unpackager.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@turbowarp/jszip": "^3.12.0"
+  }
+}
