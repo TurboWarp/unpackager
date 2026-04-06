@@ -23,6 +23,8 @@ body:
         Give us a link to where we can run the project.
 
         Don't try to download the project's HTML yourself. Most people download the wrong thing. Just give us a link to the website so we can do it correctly.
+
+        If you give us a link that starts with "file://", your request will be ignored because that link only works for you. Again, just give us the public link to play the project.
     validations:
       required: true
 
