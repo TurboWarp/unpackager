@@ -1,5 +1,5 @@
 name: Manual unpackage request
-description: Use this form if you have a project that you want a human to manually unpackage for you.
+description: Use this form to ask us to unpackage something for you
 labels:
   - "manual unpackage request"
 title: "Manual unpackage request"
@@ -9,11 +9,11 @@ body:
     attributes:
       label: Understandings
       options:
-        - label: I understand that it may take several days for a volunteer to look at my request.
+        - label: I understand that it may take several days for someone to look at my request.
           required: true
-        - label: I understand that volunteers may refuse to unpackage a project for any reason.
+        - label: I understand that we may refuse to unpackage a project for any reason.
           required: true
-        - label: I understand that volunteers will provide a temporary download link that expires within 3 days. If I fail to download the project in time, it will not be unpackaged again.
+        - label: I understand that we may provide temporary download links that expire within 3 days. If I fail to download the project in time, it will not be unpackaged again.
           required: true
 
   - type: input
